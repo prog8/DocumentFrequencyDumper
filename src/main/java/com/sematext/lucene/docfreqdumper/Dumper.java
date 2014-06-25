@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.TermsEnum;
@@ -26,10 +27,17 @@ public class Dumper {
         for (AtomicReaderContext context : leaves) {
             TermsEnum te = context.reader().terms(fieldName).iterator(null);
             while ((termBytes = te.next()) != null) {
-                //terms.put(termBytes.utf8ToString(), te.docFreq());
-                //System.out.println(termBytes.utf8ToString() + "\t" + te.docFreq());
-                System.out.println(te.docFreq() + "\t" + termBytes.utf8ToString());
+                String termString = termBytes.utf8ToString();
+                if (terms.containsKey(termString)) {
+                    terms.put(termString, terms.get(termString) + te.docFreq());
+                } else {
+                    terms.put(termString, te.docFreq());
+                }
             }
+        }
+
+        for (Map.Entry<String, Integer> entry : terms.entrySet()) {
+            System.out.println(entry.getValue() + "\t" + entry.getKey());
         }
     }
 }
